@@ -50,8 +50,8 @@ class Index:
         """
         # IMPLEMENTATION
         # ---- start your code ---- #
-        pass
-
+        self.msgs.append(m)
+        self.total_msgs += 1
         # ---- end of your code --- #
         return
 
@@ -69,8 +69,22 @@ class Index:
 
         # IMPLEMENTATION
         # ---- start your code ---- #
-        pass
-
+        lst = m.split(" ")
+        for i in lst:
+            #Improvement: remove punctuations and caps
+            try:
+                if not i[-1].isalpha() and not i[-1].isnumeric():
+                    i = i[:-1]
+            except:
+                pass
+            i = i.lower()
+            if i in self.index.keys():
+                #Improvement: avoid adding repeated lines
+                if l != self.index[i][-1][0]:
+                    self.index[i].append((l,m))
+            else:
+                self.index[i] = [(l,m)]
+                self.total_words += 1
         # ---- end of your code --- #
         return
 
@@ -90,10 +104,29 @@ class Index:
         msgs = []
         # IMPLEMENTATION
         # ---- start your code ---- #
-        pass
-
+        termlist = term.split(" ")
+        if len(termlist) == 1:
+            try:
+                #always search for lower cases, 
+                #returns an empty list if search term is not found
+                for i in self.index[term.lower()]:
+                    msgs.append(i)
+            except:
+                pass
+        #Improvement: phrase search
+        else:
+            msgs = self.phrase_search(termlist)
         # ---- end of your code --- #
         return msgs
+    
+    def phrase_search(self,termlist):
+        msgs = self.search(termlist[0])
+        new_msgs = []
+        for i in msgs:
+            if " ".join(termlist).lower() in i[1]:
+                new_msgs.append(i)
+        return new_msgs
+            
 
 class PIndex(Index):
     def __init__(self, name):
@@ -112,8 +145,14 @@ class PIndex(Index):
         """
         # IMPLEMENTATION
         # ---- start your code ---- #
-        pass
-
+        try:
+            FO = open(self.name,"r")
+            lines = FO.read().split("\n")
+            FO.close()
+            for i in lines:
+                self.add_msg_and_index(i)
+        except:
+            print("File Not Found!")
         # ---- end of your code --- #
         return
 
@@ -143,11 +182,22 @@ class PIndex(Index):
         poem = []
         # IMPLEMENTATION
         # ---- start your code ---- #
-        pass
-
+        starting = self.int2roman[p]
+        ending = self.int2roman[p + 1]
+        try:
+            starting_line = self.search(starting)[0][0]
+            #in the case of the last sonnet
+            try:
+                ending_line = self.search(ending)[0][0]    
+            except:
+                ending_line = self.total_msgs
+            poem = self.msgs[starting_line:ending_line]
+        except:
+            poem = "Poem not Found!"
         # ---- end of your code --- #
         return poem
 
+"""
 if __name__ == "__main__":
     sonnets = PIndex("AllSonnets.txt")
     # the next two lines are just for testing
@@ -155,3 +205,17 @@ if __name__ == "__main__":
     print(p3)
     s_love = sonnets.search("love")
     print(s_love)
+"""
+
+"""
+FO = open("p1.txt","r")
+Sonnet = Index("Sonnet")
+lines = FO.read().split("\n")
+for i in lines:
+    Sonnet.add_msg_and_index(i)
+FO.close()
+print(Sonnet.index.keys())
+result = Sonnet.search("thy")
+print(result)
+"""
+#print(PIndex("a").int2roman)
